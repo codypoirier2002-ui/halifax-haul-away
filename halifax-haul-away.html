@@ -1,0 +1,145 @@
+<!doctype html>
+<html lang="en-CA">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="description" content="Free Halifax leaf and brush haul-away calculator. Estimate crew time, vehicle costs and facility fees offline.">
+<title>Halifax Leaf and Brush Haul-Away | Groundwork Field Tools</title>
+<style>
+  :root { color-scheme:light; --ink:#172820; --green:#214d3a; --line:#c9d2c5; }
+  * { box-sizing:border-box; }
+  body { margin:0; background:#f7f4e9; color:var(--ink); font:1rem/1.6 system-ui,sans-serif; }
+  main { width:min(100% - 2.25rem,64rem); margin:auto; padding:clamp(1.5rem,5vw,4rem) 0; }
+  a { color:var(--green); text-underline-offset:.18em; }
+  header { border-bottom:1px solid var(--line); margin-bottom:1.6rem; padding-bottom:1.1rem; }
+  .brand { color:var(--green); font-weight:800; margin:0 0 .6rem; }
+  h1,h2 { line-height:1.15; letter-spacing:-.035em; margin:.25em 0 .4em; }
+  h1 { max-width:21ch; font-size:clamp(2.1rem,7vw,4.1rem); }
+  h2 { font-size:clamp(1.4rem,3vw,1.9rem); }
+  .grid { display:grid; grid-template-columns:minmax(0,1.2fr) minmax(0,1fr); gap:1.25rem; align-items:start; }
+  section { min-width:0; }
+  .panel { background:#fffdf8; border:1px solid var(--line); border-radius:1rem; padding:clamp(1rem,3vw,1.6rem); }
+  .results { background:#edf2e8; }
+  form { margin-top:1rem; }
+  fieldset { border:0; margin:0 0 1rem; padding:0; min-width:0; }
+  legend { font-weight:800; margin-bottom:.5rem; padding:0; }
+  .fields { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:.8rem; }
+  label { display:flex; flex-direction:column; gap:.25rem; font-size:.93rem; font-weight:650; }
+  input { min-width:0; width:100%; padding:.55rem .7rem; color:var(--ink); font:inherit; border:1px solid #76877b; background:white; border-radius:.45rem; }
+  :focus-visible { outline:3px solid #a35e1e; outline-offset:3px; }
+  button,.kit { display:inline-block; padding:.55rem .9rem; border-radius:.45rem; font:inherit; font-weight:750; }
+  button { cursor:pointer; border:1px solid #76877b; background:white; color:var(--ink); }
+  dl { margin:1rem 0 0; }
+  dl div { display:flex; justify-content:space-between; gap:.75rem; border-top:1px solid var(--line); padding:.6rem 0; }
+  dd { margin:0; font-variant-numeric:tabular-nums; text-align:right; }
+  .total { font-weight:850; }
+  .quote { margin:.25rem 0; color:var(--green); font-weight:850; font-size:clamp(1.65rem,6vw,2.65rem); }
+  .small { font-size:.92rem; }
+  .kit { background:var(--green); color:white; }
+  .guide { max-width:72ch; margin:2rem 0; }
+  .guide li { padding-bottom:.5rem; }
+  @media (max-width:46rem) { .grid { grid-template-columns:1fr; } }
+  @media (max-width:22rem) { .fields { grid-template-columns:1fr; } }
+</style>
+</head>
+<body>
+<main>
+  <header>
+    <p class="brand">Groundwork Field Tools</p>
+    <h1>Halifax leaf and brush haul-away</h1>
+    <p>Price the crew time, vehicle use and disposal fees for a cleanup that includes hauling.</p>
+  </header>
+  <div class="grid">
+    <section class="panel" aria-labelledby="inputHeading">
+      <h2 id="inputHeading">Trip inputs</h2>
+      <form id="inputs">
+        <fieldset>
+          <legend>Crew and vehicle</legend>
+          <div class="fields">
+            <label>Number of loads<input name="loads" type="number" min="0" max="1000" step="1" value="2" required></label>
+            <label>Minutes per round trip<input name="minutes" type="number" min="0" max="10080" step="any" value="35" required></label>
+            <label>Whole crew (CAD/hour)<input name="crewRate" type="number" min="0" max="100000" step="any" value="48" required></label>
+            <label>Round-trip distance (km)<input name="distance" type="number" min="0" max="100000" step="any" value="18" required></label>
+            <label>Vehicle (CAD/km)<input name="vehicleRate" type="number" min="0" max="1000" step="any" value="0.70" required></label>
+            <label>Target gross margin (%)<input name="margin" type="number" min="0" max="99" step="any" value="25" required></label>
+          </div>
+        </fieldset>
+        <fieldset>
+          <legend>Receiving facility</legend>
+          <div class="fields">
+            <label>Weight per load (kg)<input name="weight" type="number" min="0" max="100000" step="any" value="200" required></label>
+            <label>Weight fee (CAD/tonne)<input name="tonneRate" type="number" min="0" max="100000" step="any" value="120" required></label>
+            <label>Minimum per visit (CAD)<input name="minimum" type="number" min="0" max="100000" step="any" value="25" required></label>
+            <label>Fixed fee per visit (CAD)<input name="flatFee" type="number" min="0" max="100000" step="any" value="3" required></label>
+          </div>
+          <p class="small">The starting rates are examples. For uneven loads, check the facility fee for each trip separately.</p>
+        </fieldset>
+        <button type="reset">Reset sample</button>
+      </form>
+      <noscript><p>Enable JavaScript to change the sample. You can still read the guide below.</p></noscript>
+    </section>
+    <section class="panel results" aria-labelledby="resultHeading">
+      <h2 id="resultHeading">Haul-away price</h2>
+      <div aria-live="polite" aria-atomic="true">
+        <p class="quote" id="price">CAD $182.94</p>
+        <p class="small" id="basis">Before tax · 25% target gross margin</p>
+      </div>
+      <dl>
+        <div><dt>Crew time</dt><dd id="crewTime">70 min</dd></div>
+        <div><dt>Labour</dt><dd id="labour">CAD $56.00</dd></div>
+        <div><dt>Vehicle</dt><dd id="vehicle">CAD $25.20</dd></div>
+        <div><dt>Disposal</dt><dd id="disposal">CAD $56.00</dd></div>
+        <div class="total"><dt>Total trip cost</dt><dd id="total">CAD $137.20</dd></div>
+      </dl>
+      <p class="small">Hauling only. Include the work at the property separately.</p>
+      <a class="kit" href="https://contra.com/products/Exo0cF4E-seasonal-cleanup-quote-kit-for-lawn-care">Get the full quote kit · US$10</a>
+      <p class="small">The offline kit adds on-site labour, equipment, supplies and a printable customer estimate.</p>
+    </section>
+  </div>
+  <section class="guide" aria-labelledby="dropOff">
+    <h2 id="dropOff">Before you choose a drop-off</h2>
+    <ul>
+      <li>At an eligible Halifax home, check the collection date, packaging and limits before promising curbside staging. <a href="https://cdn.halifax.ca/sites/default/files/documents/home-property/garbage-recycling-green-cart/sortingguide_household-eng-print.pdf">Halifax household sorting guide</a></li>
+      <li>For contractor haul-away, ask the receiving facility about accepted material, hours, per-visit minimums and surcharges. Halifax’s council report identifies a Goodwood drop-off option for vegetative debris. Check the current terms with the facility. <a href="https://pub-halifax.escribemeetings.com/filestream.ashx?DocumentId=3170">Halifax vegetative debris report</a></li>
+      <li>The charge per visit is the greater of the weight fee and the minimum, plus any fixed fee. Add crew and vehicle costs, then divide by one minus the target gross margin.</li>
+    </ul>
+  </section>
+</main>
+<script>
+  function calculate({loads, minutes, crewRate, distance, vehicleRate, margin, weight, tonneRate, minimum, flatFee}) {
+    const crewTime = loads * minutes;
+    const cents = amount => Math.round(amount * 100 + 1e-9);
+    const labour = cents(crewTime / 60 * crewRate);
+    const vehicle = cents(loads * distance * vehicleRate);
+    const disposal = loads * cents(Math.max(weight / 1000 * tonneRate, minimum) + flatFee);
+    const total = labour + vehicle + disposal;
+    const price = Math.max(0, Math.ceil(total * 100 / (100 - margin) - 1e-9));
+    return {crewTime, labour, vehicle, disposal, total, price};
+  }
+
+  const form = document.querySelector("#inputs");
+  const display = new Intl.NumberFormat("en-CA", {minimumFractionDigits:2, maximumFractionDigits:2});
+  const numbers = new Intl.NumberFormat("en-CA", {maximumFractionDigits:2});
+  const money = cents => "CAD $" + display.format(cents / 100);
+  const set = (id, value) => { document.getElementById(id).textContent = value; };
+  const outputs = ["crewTime", "labour", "vehicle", "disposal", "total", "price"];
+
+  function update() {
+    if (!form.checkValidity()) {
+      for (const id of outputs) set(id, "—");
+      set("basis", "Enter a valid number in each field.");
+      return;
+    }
+    const values = Object.fromEntries([...new FormData(form)].map(([name, value]) => [name, Number(value)]));
+    const result = calculate(values);
+    for (const id of outputs) set(id, id === "crewTime" ? numbers.format(result[id]) + " min" : money(result[id]));
+    set("basis", "Before tax · " + numbers.format(values.margin) + "% target gross margin");
+  }
+
+  form.addEventListener("input", update);
+  form.addEventListener("submit", event => event.preventDefault());
+  form.addEventListener("reset", () => setTimeout(update, 0));
+  update();
+</script>
+</body>
+</html>
